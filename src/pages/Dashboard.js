@@ -4,11 +4,24 @@ import React, { useContext } from 'react';
 import { PropertyContext } from '../context/PropertyContext';
 import PropertyOverview from '../components/dashboard/PropertyOverview';
 import ValuationInsights from '../components/dashboard/ValuationInsights';
-// import RentalOverview from '../components/dashboard/RentalOverview';
-// import MarketInsights from '../components/dashboard/MarketInsights';
-// import InvestmentInsights from '../components/dashboard/InvestmentInsights';
-// import PopulationInsights from '../components/dashboard/PopulationInsights';
+import RentalOverview from '../components/dashboard/RentalOverview';
+import MarketStatistics from '../components/dashboard/MarketStatistics';
+import GeneratedInsights from '../components/dashboard/GeneratedInsights'; // Import
+import styled from 'styled-components';
 import './Dashboard.css';
+
+const DashboardContainer = styled.div`
+  display: flex;
+  flex-direction: column; 
+  padding: 20px;
+  gap: 40px;              
+  width: 100%;
+  max-width: 1200px;    
+  margin: 0 auto;       
+  box-sizing: border-box;
+  min-height: 100vh;    
+
+`;
 
 function Dashboard() {
   const {
@@ -16,8 +29,7 @@ function Dashboard() {
     valuationData,
     rentalData,
     marketData,
-    investmentData,
-    populationData,
+    insights,
     loading,
     error,
   } = useContext(PropertyContext); // Consume PropertyContext
@@ -29,22 +41,20 @@ function Dashboard() {
   if (error) {
     return <div>Error: {error}</div>; // Simple error state
   }
-
   if (!propertyData) {
     return <div>No data available</div>;
   }
 
+  const targetPropertyType = propertyData.propertyType; // e.g., "Single Family"
+
   return (
-    <div className="dashboard">
-      <h2>Property Report</h2>
-
-      {/* Property Overview */}
-      <PropertyOverview property={propertyData} />
-
-      {/* Valuation Insights */}
-      <ValuationInsights valueEstimate={valuationData} />
-      {/* Add other components as they are created */}
-    </div>
+    <DashboardContainer>
+        <PropertyOverview property={propertyData} />
+        <ValuationInsights valuationData={valuationData} />
+        <RentalOverview rentalData={rentalData} /> 
+        <MarketStatistics marketData={marketData} propertyType={targetPropertyType} />
+        <GeneratedInsights insights={insights} />
+    </DashboardContainer>
   );
 }
 

@@ -3,6 +3,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { USE_MOCK_DATA } from '../config';
 import mockData from '../mockData/mockData.json';
+import fetchPropertyData from '../api/apiService';
 
 export const PropertyContext = createContext({
   formData: null,
@@ -15,10 +16,8 @@ export const PropertyContext = createContext({
   setRentalData: () => {},
   marketData: null,
   setMarketData: () => {},
-  investmentData: null,
-  setInvestmentData: () => {},
-  populationData: null,
-  setPopulationData: () => {},
+  insights: null, // Renamed from aiData
+  setInsights: () => {}, // Renamed from setAiData
   loading: false,
   setLoading: () => {},
   error: null,
@@ -26,39 +25,47 @@ export const PropertyContext = createContext({
 });
 
 export const PropertyProvider = ({ children }) => {
-  // State variables for form data and API results
   const [formData, setFormData] = useState(null);
   const [propertyData, setPropertyData] = useState(null);
   const [valuationData, setValuationData] = useState(null);
   const [rentalData, setRentalData] = useState(null);
   const [marketData, setMarketData] = useState(null);
-  const [investmentData, setInvestmentData] = useState(null);
-  const [populationData, setPopulationData] = useState(null);
-
-  // State variables for loading and error handling
+  const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Effect to load mock data or wait for formData
   useEffect(() => {
-    if (USE_MOCK_DATA) {
+    const loadData = async () => {
+      setLoading(true);
       try {
-        console.log('Loading mock data');
-        setPropertyData(mockData.propertyDetails?.fullDetails);
-        setValuationData(mockData.propertyDetails?.valueEstimate);
-        setRentalData(mockData.propertyDetails?.rentEstimate);
-        setMarketData(mockData.insights?.housingInsights);
-        setInvestmentData(mockData.insights?.investmentInsights);
-        setPopulationData(mockData.insights?.populationInsights);
+        let insightsData;
+        if (USE_MOCK_DATA) {
+          console.log('Loading mock data');
+          insightsData = mockData;
+        } else if (formData) {
+          console.log('Loading live data');
+          insightsData = await fetchPropertyData(formData);
+        }
+
+        if (insightsData) {
+          console.log(insightsData)
+          setPropertyData(insightsData.propertyDetails?.fullDetails);
+          setValuationData(insightsData.propertyDetails?.valueEstimate);
+          setRentalData(insightsData.propertyDetails?.rentEstimate);
+          setMarketData(insightsData.propertyDetails?.marketStatistics);
+          setInsights(insightsData.insights);
+        }
+
         setLoading(false);
       } catch (err) {
-        console.error('Error loading mock data:', err);
-        setError('Failed to load mock data.');
+        console.error('Error loading data:', err);
+        setError('Failed to load data.');
         setLoading(false);
       }
-    }
-    // Do not fetch live data here; it will be triggered in LoadingPage.js
-  }, []);
+    };
+
+    loadData();
+  }, [USE_MOCK_DATA, formData]);
 
   const contextValue = {
     formData,
@@ -71,10 +78,8 @@ export const PropertyProvider = ({ children }) => {
     setRentalData,
     marketData,
     setMarketData,
-    investmentData,
-    setInvestmentData,
-    populationData,
-    setPopulationData,
+    insights,
+    setInsights, 
     loading,
     setLoading,
     error,

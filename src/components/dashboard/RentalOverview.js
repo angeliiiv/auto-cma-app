@@ -1,4 +1,4 @@
-// src/components/dashboard/ValuationInsights.js
+// src/components/dashboard/RentalOverview.js
 
 import React from 'react';
 import styled from 'styled-components';
@@ -14,18 +14,12 @@ const Container = styled.div`
   box-sizing: border-box;
 `;
 
-const ARVCard = styled.div`
-  background: #f8f9fa;
+const RentalCard = styled.div`
+  background: #f0f4f8;
   border-radius: 12px;
-  padding: 30px 20px;
+  padding: 20px;
   text-align: center;
-  width: 100%;
-  max-width: 300px;
-  margin-bottom: 40px;
-
-  @media (max-width: 600px) {
-    padding: 20px 10px;
-  }
+  margin-bottom: 20px;
 `;
 
 const Title = styled.h3`
@@ -34,8 +28,8 @@ const Title = styled.h3`
   margin-bottom: 10px;
 `;
 
-const ARVValue = styled.p`
-  font-size: 32px;
+const RentValue = styled.p`
+  font-size: 28px;
   color: #333333;
   margin: 0;
   font-weight: bold;
@@ -87,27 +81,27 @@ const Tr = styled.tr`
   }
 `;
 
-const ValuationInsights = ({ valuationData }) => {
-  console.log('Valuation data:', valuationData); // Debugging line
-  const { price, priceRangeLow, priceRangeHigh, comparables } = valuationData;
+const RentalOverview = ({ rentalData }) => {
+  console.log('Rental Data:', rentalData);
+  const { rent, rentRangeLow, rentRangeHigh, comparables = [] } = rentalData;
 
   return (
     <Container>
-      {/* ARV Scorecard */}
-      <ARVCard>
-        <Title>After Repair Value (ARV)</Title>
-        <ARVValue>${price.toLocaleString()}</ARVValue>
-        <Range>${priceRangeLow.toLocaleString()} - ${priceRangeHigh.toLocaleString()}</Range>
-      </ARVCard>
+      {/* Rental Value Card */}
+      <RentalCard>
+        <Title>Estimated Rent</Title>
+        <RentValue>${rent.toLocaleString()}</RentValue>
+        <Range>${rentRangeLow.toLocaleString()} - ${rentRangeHigh.toLocaleString()}</Range>
+      </RentalCard>
 
-      {/* Sales Comparables Table Section */}
+      {/* Rental Comparables Table */}
       <Section>
-        <Title>Sales Comparables</Title>
+        <Title>Rental Comparables</Title>
         <Table>
           <thead>
             <tr>
               <Th>Address</Th>
-              <Th>Price</Th>
+              <Th>Rent</Th>
               <Th>Sq Ft</Th>
               <Th>Beds/Baths</Th>
               <Th>Year Built</Th>
@@ -138,11 +132,11 @@ const ValuationInsights = ({ valuationData }) => {
   );
 };
 
-ValuationInsights.propTypes = {
-  valuationData: PropTypes.shape({
-    price: PropTypes.number.isRequired,
-    priceRangeLow: PropTypes.number.isRequired,
-    priceRangeHigh: PropTypes.number.isRequired,
+RentalOverview.propTypes = {
+  rentalData: PropTypes.shape({
+    rent: PropTypes.number.isRequired,
+    rentRangeLow: PropTypes.number.isRequired,
+    rentRangeHigh: PropTypes.number.isRequired,
     comparables: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string.isRequired,
@@ -151,7 +145,7 @@ ValuationInsights.propTypes = {
         squareFootage: PropTypes.number.isRequired,
         bedrooms: PropTypes.number.isRequired,
         bathrooms: PropTypes.number.isRequired,
-        yearBuilt: PropTypes.number.isRequired,
+        yearBuilt: PropTypes.number,
         daysOnMarket: PropTypes.number.isRequired,
         distance: PropTypes.number.isRequired,
         correlation: PropTypes.number.isRequired,
@@ -160,4 +154,4 @@ ValuationInsights.propTypes = {
   }).isRequired,
 };
 
-export default ValuationInsights;
+export default RentalOverview;

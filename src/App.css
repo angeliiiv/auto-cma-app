@@ -3,10 +3,11 @@ body {
   background-color: #f0f0f0;
   margin: 0;
   padding: 0;
-  display: flex;
+  /* Remove flex properties */
+  /* display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100vh; */
 }
 
 .App {
@@ -14,8 +15,10 @@ body {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  max-width: 100%;
-  width: 100%;
+  max-width: 1200px; /* Optional: Set a max-width */
+  width: 90%;        /* Adjusted for responsiveness */
+  margin: 20px auto; /* Center horizontally with margin */
+  box-sizing: border-box;
 }
 
 h1 {
@@ -42,4 +45,3 @@ button:hover {
   border: 1px solid #ddd;
   border-radius: 4px;
 }
-
