@@ -1,0 +1,41 @@
+.address-input-form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin: auto;
+    text-align: left;
+  }
+  
+  .address-input-form form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .address-input-form label {
+    margin-bottom: 10px;
+  }
+  
+  .address-input-form input {
+    padding: 8px;
+    margin-top: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: calc(100% - 16px);
+  }
+  
+  .address-input-form button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  
+  .address-input-form button:hover {
+    background-color: #0056b3;
+  }
+  

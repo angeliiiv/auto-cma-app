@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-autocmaapp2-dev-3c53c-authRole",
+      "UnauthRoleArn": "arn:aws:iam::891376996138:role/amplify-autocmaapp2-dev-3c53c-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::891376996138:role/amplify-autocmaapp2-dev-3c53c-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-autocmaapp2-dev-3c53c-deployment",
+      "UnauthRoleName": "amplify-autocmaapp2-dev-3c53c-unauthRole",
+      "StackName": "amplify-autocmaapp2-dev-3c53c",
+      "StackId": "arn:aws:cloudformation:us-east-2:891376996138:stack/amplify-autocmaapp2-dev-3c53c/35b22320-365d-11ef-bc83-02150c7c4bdb",
+      "AmplifyAppId": "d1rdz0k231zsr6"
+    },
+    "categories": {
+      "auth": {
+        "autocmaapp2e7ea1b83": {}
+      },
+      "api": {
+        "autocmaapp2": {}
+      }
+    }
+  }
+}
