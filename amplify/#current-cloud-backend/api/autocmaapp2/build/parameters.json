@@ -1,0 +1,7 @@
+{
+    "AppSyncApiName": "autocmaapp2",
+    "DynamoDBBillingMode": "PAY_PER_REQUEST",
+    "DynamoDBEnableServerSideEncryption": false,
+    "S3DeploymentBucket": "amplify-autocmaapp2-dev-3c53c-deployment",
+    "S3DeploymentRootKey": "amplify-appsync-files/11db60ac21a950dc9993af973ed47187c774ebd0"
+}
