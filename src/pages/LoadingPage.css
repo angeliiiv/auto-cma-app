@@ -1,0 +1,13 @@
+/* src/pages/LoadingPage.css */
+
+.loading-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+  }
+  
+  .error-message {
+    color: red;
+    margin-top: 20px;
+  }
