@@ -1,9 +1,9 @@
 // src/components/dashboard/GeneratedInsights.js
 
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { AiOutlineRobot } from 'react-icons/ai'; // AI Icon from React Icons
+import { AiOutlineRobot, AiOutlineHome, AiOutlineDollar } from 'react-icons/ai';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 
@@ -66,6 +66,12 @@ const InsightCard = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   box-sizing: border-box;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
 
   @media (min-width: 768px) {
     flex: 1 1 calc(50% - 20px);
@@ -73,6 +79,21 @@ const InsightCard = styled.div`
 
   @media (min-width: 1024px) {
     flex: 1 1 calc(33.333% - 20px);
+  }
+`;
+
+const InsightHeader = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+
+  svg {
+    margin-right: 8px;
+    color: #006064;
+  }
+
+  h3 {
+    margin: 0;
   }
 `;
 
@@ -89,6 +110,10 @@ const InsightContent = styled.div`
   line-height: 1.6; /* Improved line spacing */
   color: #555555;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  max-height: ${({ $expanded }) => ($expanded ? 'none' : '200px')};
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.3s ease;
 
   /* Styling for markdown elements */
   h3 {
@@ -128,46 +153,78 @@ const InsightContent = styled.div`
   a:hover {
     text-decoration: underline;
   }
+
+  /* Add a fade-out effect */
+  &:after {
+    content: '';
+    display: ${({ $expanded }) => ($expanded ? 'none' : 'block')};
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(to top, #f9f9f9, rgba(249, 249, 249, 0));
+  }
+`;
+
+const ToggleButton = styled.button`
+  background: none;
+  border: none;
+  color: #0066cc;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  margin-top: 10px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid #006064;
+    outline-offset: 2px;
+  }
 `;
 
 // Helper Function to Convert Keys to Titles
 const formatTitle = (key) => {
-  // Replace camelCase with spaces and capitalize each word
-  const result = key
+  // Remove 'Insights' suffix if present
+  const titleKey = key.replace(/Insights$/, '');
+  // Replace camelCase and underscores with spaces, then capitalize each word
+  return titleKey
     .replace(/([A-Z])/g, ' $1') // Insert space before capital letters
     .replace(/_/g, ' ') // Replace underscores with spaces
     .replace(/\b\w/g, char => char.toUpperCase()) // Capitalize first letter of each word
     .trim();
-  return result;
+};
+
+// Icon Mapping
+const insightIcons = {
+  fixAndFlipInsights: <AiOutlineDollar size={20} />,
+  buyAndHoldInsights: <AiOutlineHome size={20} />,
+  // Add more mappings as needed
 };
 
 // Component
 
 const GeneratedInsights = ({ insights }) => {
-  console.log('Generated Insights:', insights);
-
-  if (!insights || typeof insights !== 'object') {
-    console.warn('GeneratedInsights: insights prop is undefined or not an object.');
-    return (
-      <Container>
-        <SectionHeader>
-          <h2>Generated Insights</h2>
-          <Badge aria-label="AI Generated Insights">
-            <AiOutlineRobot size={16} />
-            AI Powered
-          </Badge>
-        </SectionHeader>
-        <p>No insights available at the moment.</p>
-      </Container>
-    );
-  }
+  const [expandedInsights, setExpandedInsights] = useState({});
 
   // Convert the insights object into an array for easier iteration
   const insightsArray = Object.entries(insights).map(([key, content]) => ({
     id: key,
-    title: formatTitle(key.replace(/Insights$/, '')), // Remove 'Insights' suffix and format
-    content,
+    title: formatTitle(key.replace(/Insights$/, '')),
+    content: content,
   }));
+
+  const toggleExpand = (id) => {
+    setExpandedInsights(prevState => ({
+      ...prevState,
+      [id]: !prevState[id],
+    }));
+  };
+
+  const filteredInsights = insightsArray; // No filtering since search bar is removed
 
   return (
     <Container>
@@ -179,28 +236,44 @@ const GeneratedInsights = ({ insights }) => {
         </Badge>
       </SectionHeader>
       <InsightsContainer>
-        {insightsArray.map((insight) => (
-          <InsightCard key={insight.id}>
-            <InsightTitle>{insight.title} Insights</InsightTitle>
-            <InsightContent>
-              <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
-                {insight.content}
-              </ReactMarkdown>
-            </InsightContent>
-          </InsightCard>
-        ))}
+        {filteredInsights.length > 0 ? (
+          filteredInsights.map((insight) => (
+            <InsightCard key={insight.id}>
+              <InsightHeader>
+                {insightIcons[insight.id] || <AiOutlineRobot size={20} />}
+                <InsightTitle>{insight.title} Insights</InsightTitle>
+              </InsightHeader>
+              <InsightContent
+                id={`insight-content-${insight.id}`}
+                $expanded={expandedInsights[insight.id]}
+              >
+                <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+                  {insight.content}
+                </ReactMarkdown>
+              </InsightContent>
+              {insight.content.length > 300 && ( // Optional: show toggle only if content is long
+                <ToggleButton
+                  onClick={() => toggleExpand(insight.id)}
+                  aria-expanded={expandedInsights[insight.id] ? 'true' : 'false'}
+                  aria-controls={`insight-content-${insight.id}`}
+                >
+                  {expandedInsights[insight.id] ? 'Show Less' : 'Show More'}
+                </ToggleButton>
+              )}
+            </InsightCard>
+          ))
+        ) : (
+          <p>No insights available.</p>
+        )}
       </InsightsContainer>
     </Container>
   );
 };
 
 GeneratedInsights.propTypes = {
-  insights: PropTypes.shape({
-    populationInsights: PropTypes.string.isRequired,
-    housingInsights: PropTypes.string.isRequired,
-    investmentInsights: PropTypes.string.isRequired,
-    // Add other insight categories if present
-  }).isRequired,
+  insights: PropTypes.objectOf(
+    PropTypes.string
+  ).isRequired,
 };
 
 export default GeneratedInsights;

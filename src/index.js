@@ -14,9 +14,9 @@ const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container); // Create a root.
 
 root.render(
-  <React.StrictMode>
+  //<React.StrictMode>
     <App />
-  </React.StrictMode>
+  //</React.StrictMode>
 );
 
 // Performance measuring remains unchanged
