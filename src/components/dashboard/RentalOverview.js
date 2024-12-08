@@ -15,7 +15,7 @@ const Container = styled.div`
 `;
 
 const RentalCard = styled.div`
-  background: #f0f4f8;
+  background: #f8f9fa;
   border-radius: 12px;
   padding: 20px;
   text-align: center;

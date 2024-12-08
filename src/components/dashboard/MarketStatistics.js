@@ -1,6 +1,6 @@
 // src/components/dashboard/MarketStatistics.js
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {
@@ -13,6 +13,7 @@ import {
   Legend,
 } from 'recharts';
 
+// Styled Components
 const Container = styled.div`
   width: 100%;
   max-width: 1200px;
@@ -63,226 +64,228 @@ const ChartSection = styled.section`
   margin-bottom: 40px;
 `;
 
-const colors = [
-  '#8884d8',
-  '#82ca9d',
-  '#ffc658',
-  '#ff7300',
-  '#387908',
-  '#a4de6c',
-  '#d0ed57',
-  '#8dd1e1',
-  '#ffc0cb',
-  '#d88884',
-]; // Define a color palette
+// Color Palette
+const colors = ['#8884d8', '#82ca9d'];
 
+// Reusable SummaryCards Component
+const SummaryCards = React.memo(({ metrics }) => (
+  <SummaryGrid>
+    {metrics.map((metric) => (
+      <Card key={metric.title}>
+        <Title>{metric.title}</Title>
+        <Value>{metric.value}</Value>
+      </Card>
+    ))}
+  </SummaryGrid>
+));
+
+SummaryCards.propTypes = {
+  metrics: PropTypes.arrayOf(
+    PropTypes.shape({
+      title: PropTypes.string.isRequired,
+      value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    })
+  ).isRequired,
+};
+
+// Reusable TrendChart Component
+const TrendChart = React.memo(({ data, dataKeys, title, colors }) => (
+  <ChartSection aria-label={title}>
+    <h3>{title}</h3>
+    <ResponsiveContainer width="100%" height={400}>
+      <LineChart data={data}>
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip
+          formatter={(value) =>
+            value !== null && value !== undefined ? `$${value.toLocaleString()}` : 'N/A'
+          }
+          aria-label={`Tooltip for ${title}`}
+        />
+        <Legend />
+        {dataKeys.map((key, index) => (
+          <Line
+            key={key}
+            type="monotone"
+            dataKey={key}
+            stroke={colors[index % colors.length]}
+            name={key}
+            connectNulls
+            strokeWidth={2}
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  </ChartSection>
+));
+
+TrendChart.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  dataKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
+  title: PropTypes.string.isRequired,
+  colors: PropTypes.arrayOf(PropTypes.string).isRequired,
+};
+
+// Main MarketStatistics Component
 const MarketStatistics = ({ marketData, propertyType }) => {
   const { saleData = {}, rentalData = {} } = marketData;
-  const { dataByBedrooms: saleBedrooms = [], history: saleHistory = {} } = saleData;
-  const { dataByBedrooms: rentalBedrooms = [], history: rentalHistory = {} } = rentalData;
-  console.log('Sales Data:', saleData);
-  console.log('Rental Data:', rentalData);
 
-  // Extract unique bedroom counts from saleData.dataByBedrooms and rentalData.dataByBedrooms
-  const uniqueSaleBedrooms = [
-    ...new Set(saleBedrooms.map((bd) => bd.bedrooms)),
-  ].sort((a, b) => a - b);
+  // Transform sale history data to extract average price over time
+  const saleHistoryData = useMemo(() => {
+    if (!saleData.history) return [];
 
-  const uniqueRentalBedrooms = [
-    ...new Set(rentalBedrooms.map((bd) => bd.bedrooms)),
-  ].sort((a, b) => a - b);
+    return Object.values(saleData.history)
+      .map((monthData) => {
+        const formattedMonth = new Date(monthData.date).toLocaleString('default', {
+          month: 'short',
+          year: 'numeric',
+        });
+        return {
+          month: formattedMonth,
+          averagePrice: monthData.averagePrice || null,
+        };
+      })
+      .sort((a, b) => new Date(a.month) - new Date(b.month));
+  }, [saleData.history]);
 
-  // Transform saleHistoryData to include averagePrice per bedroom
-  const saleHistoryData = Object.entries(saleHistory).map(
-    ([monthKey, monthData]) => {
-      const formattedMonth = new Date(monthData.date).toLocaleString('default', {
-        month: 'short',
-        year: 'numeric',
-      });
-      const dataPoint = { month: formattedMonth };
+  // Transform rental history data to extract average rent over time
+  const rentalHistoryData = useMemo(() => {
+    if (!rentalData.history) return [];
 
-      // Populate averagePrice for each bedroom count
-      monthData.dataByBedrooms.forEach((bd) => {
-        dataPoint[`Bedroom ${bd.bedrooms}`] = bd.averagePrice;
-      });
+    return Object.values(rentalData.history)
+      .map((monthData) => {
+        const formattedMonth = new Date(monthData.date).toLocaleString('default', {
+          month: 'short',
+          year: 'numeric',
+        });
+        return {
+          month: formattedMonth,
+          averageRent: monthData.averageRent || null,
+        };
+      })
+      .sort((a, b) => new Date(a.month) - new Date(b.month));
+  }, [rentalData.history]);
 
-      // Ensure all bedrooms are represented, even if data is missing
-      uniqueSaleBedrooms.forEach((bedroom) => {
-        if (!dataPoint[`Bedroom ${bedroom}`]) {
-          dataPoint[`Bedroom ${bedroom}`] = null; // or 0
-        }
-      });
-
-      return dataPoint;
-    }
+  // Define Metrics for Sales
+  const saleMetrics = useMemo(
+    () => [
+      {
+        title: 'Average Price',
+        value: saleData.averagePrice
+          ? `$${saleData.averagePrice.toLocaleString()}`
+          : 'N/A',
+      },
+      {
+        title: 'Median Price',
+        value: saleData.medianPrice
+          ? `$${saleData.medianPrice.toLocaleString()}`
+          : 'N/A',
+      },
+      {
+        title: 'Avg Price/Sq Ft',
+        value: saleData.averagePricePerSquareFoot
+          ? `$${saleData.averagePricePerSquareFoot.toFixed(2)}`
+          : 'N/A',
+      },
+      {
+        title: 'Avg Days on Market',
+        value: saleData.averageDaysOnMarket
+          ? `${saleData.averageDaysOnMarket.toFixed(1)}`
+          : 'N/A',
+      },
+      {
+        title: 'Total Listings',
+        value: saleData.totalListings !== undefined ? saleData.totalListings : 'N/A',
+      },
+      {
+        title: 'New Listings',
+        value: saleData.newListings !== undefined ? saleData.newListings : 'N/A',
+      },
+    ],
+    [saleData]
   );
 
-  // Transform rentalHistoryData to include averageRent per bedroom
-  const rentalHistoryData = Object.entries(rentalHistory).map(
-    ([monthKey, monthData]) => {
-      const formattedMonth = new Date(monthData.date).toLocaleString('default', {
-        month: 'short',
-        year: 'numeric',
-      });
-      const dataPoint = { month: formattedMonth };
-
-      // Populate averageRent for each bedroom count
-      monthData.dataByBedrooms.forEach((bd) => {
-        dataPoint[`Bedroom ${bd.bedrooms}`] = bd.averageRent;
-      });
-
-      // Ensure all bedrooms are represented, even if data is missing
-      uniqueRentalBedrooms.forEach((bedroom) => {
-        if (!dataPoint[`Bedroom ${bedroom}`]) {
-          dataPoint[`Bedroom ${bedroom}`] = null; // or 0
-        }
-      });
-
-      return dataPoint;
-    }
+  // Define Metrics for Rentals
+  const rentalMetrics = useMemo(
+    () => [
+      {
+        title: 'Average Rent',
+        value: rentalData.averageRent
+          ? `$${rentalData.averageRent.toLocaleString()}`
+          : 'N/A',
+      },
+      {
+        title: 'Median Rent',
+        value: rentalData.medianRent
+          ? `$${rentalData.medianRent.toLocaleString()}`
+          : 'N/A',
+      },
+      {
+        title: 'Avg Rent/Sq Ft',
+        value: rentalData.averageRentPerSquareFoot
+          ? `$${rentalData.averageRentPerSquareFoot.toFixed(2)}`
+          : 'N/A',
+      },
+      {
+        title: 'Avg Days on Market',
+        value: rentalData.averageDaysOnMarket
+          ? `${rentalData.averageDaysOnMarket.toFixed(1)}`
+          : 'N/A',
+      },
+      {
+        title: 'Total Listings',
+        value: rentalData.totalListings !== undefined ? rentalData.totalListings : 'N/A',
+      },
+      {
+        title: 'New Listings',
+        value: rentalData.newListings !== undefined ? rentalData.newListings : 'N/A',
+      },
+    ],
+    [rentalData]
   );
 
   return (
     <Container>
+      <h1>
+        Market Statistics
+      </h1>
+
       {/* Sales Data Section */}
       <Section>
         <SectionTitle>Sales Data</SectionTitle>
-
-        {/* Sales Summary Cards */}
-        <SummaryGrid>
-          <Card>
-            <Title>Average Price</Title>
-            <Value>${saleData.averagePrice?.toLocaleString() || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Median Price</Title>
-            <Value>${saleData.medianPrice?.toLocaleString() || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Min Price</Title>
-            <Value>${saleData.minPrice?.toLocaleString() || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Max Price</Title>
-            <Value>${saleData.maxPrice?.toLocaleString() || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Avg Price/Sq Ft</Title>
-            <Value>${saleData.averagePricePerSquareFoot?.toFixed(2) || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Median Price/Sq Ft</Title>
-            <Value>${saleData.medianPricePerSquareFoot?.toFixed(2) || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Avg Days on Market</Title>
-            <Value>{saleData.averageDaysOnMarket?.toFixed(1) || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Total Listings</Title>
-            <Value>{saleData.totalListings ?? 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>New Listings</Title>
-            <Value>{saleData.newListings ?? 'N/A'}</Value>
-          </Card>
-        </SummaryGrid>
-
-        {/* Monthly Average Price Trends by Bedrooms */}
-        <ChartSection>
-          <h3>Monthly Average Price Trends by Bedrooms</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={saleHistoryData}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value) => (value ? `$${value.toLocaleString()}` : 'N/A')} />
-              <Legend />
-              {uniqueSaleBedrooms.map((bedroom, index) => (
-                <Line
-                  key={`Bedroom ${bedroom}`}
-                  type="monotone"
-                  dataKey={`Bedroom ${bedroom}`}
-                  stroke={colors[index % colors.length]}
-                  name={`Bedroom ${bedroom}`}
-                  connectNulls
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartSection>
+        <SummaryCards metrics={saleMetrics} />
+        {saleHistoryData.length > 0 ? (
+          <TrendChart
+            data={saleHistoryData}
+            dataKeys={['averagePrice']}
+            title="Monthly Average Price Trends"
+            colors={[colors[0]]}
+          />
+        ) : (
+          <p>No sales history data available.</p>
+        )}
       </Section>
 
       {/* Rental Data Section */}
       <Section>
         <SectionTitle>Rental Data</SectionTitle>
-
-        {/* Rental Summary Cards */}
-        <SummaryGrid>
-          <Card>
-            <Title>Average Rent</Title>
-            <Value>${rentalData.averageRent?.toLocaleString() || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Median Rent</Title>
-            <Value>${rentalData.medianRent?.toLocaleString() || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Min Rent</Title>
-            <Value>${rentalData.minRent?.toLocaleString() || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Max Rent</Title>
-            <Value>${rentalData.maxRent?.toLocaleString() || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Avg Rent/Sq Ft</Title>
-            <Value>${rentalData.averageRentPerSquareFoot?.toFixed(2) || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Median Rent/Sq Ft</Title>
-            <Value>${rentalData.medianRentPerSquareFoot?.toFixed(2) || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Avg Days on Market</Title>
-            <Value>{rentalData.averageDaysOnMarket?.toFixed(1) || 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>Total Listings</Title>
-            <Value>{rentalData.totalListings ?? 'N/A'}</Value>
-          </Card>
-          <Card>
-            <Title>New Listings</Title>
-            <Value>{rentalData.newListings ?? 'N/A'}</Value>
-          </Card>
-        </SummaryGrid>
-
-        {/* Monthly Average Rent Trends by Bedrooms */}
-        <ChartSection>
-          <h3>Monthly Average Rent Trends by Bedrooms</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={rentalHistoryData}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value) => (value ? `$${value.toLocaleString()}` : 'N/A')} />
-              <Legend />
-              {uniqueRentalBedrooms.map((bedroom, index) => (
-                <Line
-                  key={`Bedroom ${bedroom}`}
-                  type="monotone"
-                  dataKey={`Bedroom ${bedroom}`}
-                  stroke={colors[index % colors.length]}
-                  name={`Bedroom ${bedroom}`}
-                  connectNulls
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartSection>
+        <SummaryCards metrics={rentalMetrics} />
+        {rentalHistoryData.length > 0 ? (
+          <TrendChart
+            data={rentalHistoryData}
+            dataKeys={['averageRent']}
+            title="Monthly Average Rent Trends"
+            colors={[colors[1]]}
+          />
+        ) : (
+          <p>No rental history data available.</p>
+        )}
       </Section>
     </Container>
   );
 };
 
+// Enhanced PropTypes Definitions
 MarketStatistics.propTypes = {
   marketData: PropTypes.shape({
     saleData: PropTypes.shape({
@@ -294,76 +297,20 @@ MarketStatistics.propTypes = {
       medianPricePerSquareFoot: PropTypes.number,
       minPricePerSquareFoot: PropTypes.number,
       maxPricePerSquareFoot: PropTypes.number,
-      averageSquareFootage: PropTypes.number,
-      medianSquareFootage: PropTypes.number,
-      minSquareFootage: PropTypes.number,
-      maxSquareFootage: PropTypes.number,
       averageDaysOnMarket: PropTypes.number,
       medianDaysOnMarket: PropTypes.number,
       minDaysOnMarket: PropTypes.number,
       maxDaysOnMarket: PropTypes.number,
       newListings: PropTypes.number,
       totalListings: PropTypes.number,
-      dataByPropertyType: PropTypes.arrayOf(
-        PropTypes.shape({
-          propertyType: PropTypes.string.isRequired,
-          averagePrice: PropTypes.number,
-          medianPrice: PropTypes.number,
-          minPrice: PropTypes.number,
-          maxPrice: PropTypes.number,
-          averagePricePerSquareFoot: PropTypes.number,
-          medianPricePerSquareFoot: PropTypes.number,
-          minPricePerSquareFoot: PropTypes.number,
-          maxPricePerSquareFoot: PropTypes.number,
-          averageSquareFootage: PropTypes.number,
-          medianSquareFootage: PropTypes.number,
-          minSquareFootage: PropTypes.number,
-          maxSquareFootage: PropTypes.number,
-          averageDaysOnMarket: PropTypes.number,
-          medianDaysOnMarket: PropTypes.number,
-          minDaysOnMarket: PropTypes.number,
-          maxDaysOnMarket: PropTypes.number,
-          newListings: PropTypes.number,
-          totalListings: PropTypes.number,
-        })
-      ),
-      dataByBedrooms: PropTypes.arrayOf(
-        PropTypes.shape({
-          bedrooms: PropTypes.number.isRequired,
-          averagePrice: PropTypes.number.isRequired,
-          medianPrice: PropTypes.number.isRequired,
-          minPrice: PropTypes.number.isRequired,
-          maxPrice: PropTypes.number.isRequired,
-          averagePricePerSquareFoot: PropTypes.number,
-          medianPricePerSquareFoot: PropTypes.number,
-          minPricePerSquareFoot: PropTypes.number,
-          maxPricePerSquareFoot: PropTypes.number,
-          averageSquareFootage: PropTypes.number,
-          medianSquareFootage: PropTypes.number,
-          minSquareFootage: PropTypes.number,
-          maxSquareFootage: PropTypes.number,
-          averageDaysOnMarket: PropTypes.number,
-          medianDaysOnMarket: PropTypes.number,
-          minDaysOnMarket: PropTypes.number,
-          maxDaysOnMarket: PropTypes.number,
-          newListings: PropTypes.number,
-          totalListings: PropTypes.number,
-        })
-      ),
       history: PropTypes.objectOf(
         PropTypes.shape({
           date: PropTypes.string.isRequired,
           averagePrice: PropTypes.number,
+          medianPrice: PropTypes.number,
           minPrice: PropTypes.number,
           maxPrice: PropTypes.number,
           totalListings: PropTypes.number,
-          dataByBedrooms: PropTypes.arrayOf(
-            PropTypes.shape({
-              bedrooms: PropTypes.number.isRequired,
-              averagePrice: PropTypes.number.isRequired,
-              totalListings: PropTypes.number.isRequired,
-            })
-          ),
         })
       ),
     }),
@@ -377,25 +324,11 @@ MarketStatistics.propTypes = {
       averageDaysOnMarket: PropTypes.number,
       totalListings: PropTypes.number,
       newListings: PropTypes.number,
-      dataByBedrooms: PropTypes.arrayOf(
-        PropTypes.shape({
-          bedrooms: PropTypes.number.isRequired,
-          averageRent: PropTypes.number.isRequired,
-          totalListings: PropTypes.number.isRequired,
-        })
-      ),
       history: PropTypes.objectOf(
         PropTypes.shape({
           date: PropTypes.string.isRequired,
           averageRent: PropTypes.number,
           totalListings: PropTypes.number,
-          dataByBedrooms: PropTypes.arrayOf(
-            PropTypes.shape({
-              bedrooms: PropTypes.number.isRequired,
-              averageRent: PropTypes.number.isRequired,
-              totalListings: PropTypes.number.isRequired,
-            })
-          ),
         })
       ),
     }),

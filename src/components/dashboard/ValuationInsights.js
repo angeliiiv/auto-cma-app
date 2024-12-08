@@ -17,15 +17,9 @@ const Container = styled.div`
 const ARVCard = styled.div`
   background: #f8f9fa;
   border-radius: 12px;
-  padding: 30px 20px;
+  padding: 20px;
   text-align: center;
-  width: 100%;
-  max-width: 300px;
-  margin-bottom: 40px;
-
-  @media (max-width: 600px) {
-    padding: 20px 10px;
-  }
+  margin-bottom: 20px;
 `;
 
 const Title = styled.h3`
