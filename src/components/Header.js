@@ -9,10 +9,9 @@ const Header = () => {
     <header className="header">
       <div className="header-content">
         <div className="logo">
-          MyApp
+          Estimate.AI
         </div>
         <nav className="nav-links">
-          <span>{user.username}</span>
           <button onClick={signOut} className="header-button">Sign Out</button>
           <button className="header-button">Account</button>
         </nav>
