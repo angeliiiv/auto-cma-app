@@ -22,6 +22,9 @@ export const PropertyContext = createContext({
   setLoading: () => {},
   error: null,
   setError: () => {},
+  repairEstimates: null,
+  setRepairEstimates: () => {},
+
 });
 
 export const PropertyProvider = ({ children }) => {
@@ -33,6 +36,7 @@ export const PropertyProvider = ({ children }) => {
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [repairEstimates, setRepairEstimates] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -54,6 +58,7 @@ export const PropertyProvider = ({ children }) => {
           setRentalData(insightsData.propertyDetails?.rentEstimate);
           setMarketData(insightsData.propertyDetails?.marketStatistics);
           setInsights(insightsData.insights);
+          setRepairEstimates(insightsData.repairEstimates);
         }
 
         setLoading(false);
@@ -84,6 +89,8 @@ export const PropertyProvider = ({ children }) => {
     setLoading,
     error,
     setError,
+    repairEstimates, 
+    setRepairEstimates,
   };
 
   return (
