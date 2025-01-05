@@ -32,6 +32,7 @@ function Dashboard() {
     insights,
     loading,
     error,
+    repairEstimates,
   } = useContext(PropertyContext); // Consume PropertyContext
 
   if (loading) {
@@ -50,7 +51,10 @@ function Dashboard() {
   return (
     <DashboardContainer>
         <PropertyOverview property={propertyData} />
-        <ValuationInsights valuationData={valuationData} />
+        <ValuationInsights 
+          valuationData={valuationData}
+          repairEstimates={repairEstimates} // <-- pass it here
+        />
         <RentalOverview rentalData={rentalData} /> 
         <MarketStatistics marketData={marketData} propertyType={targetPropertyType} />
         <GeneratedInsights insights={insights} />
