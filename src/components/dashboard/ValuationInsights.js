@@ -3,15 +3,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { FiInfo, FiEdit, FiChevronUp, FiChevronDown } from 'react-icons/fi';
+import { FiInfo, FiEdit, FiChevronUp, FiChevronDown, FiCheck } from 'react-icons/fi';
 import Modal from 'react-modal';
-
-// Ensure the modal is attached to the app root for accessibility
-Modal.setAppElement('#root');
 
 // --------------------- Styled Components ---------------------
 
-// Container for the entire component
 const Container = styled.div`
   width: 100%;
   max-width: 1200px;
@@ -22,7 +18,6 @@ const Container = styled.div`
   box-sizing: border-box;
 `;
 
-// Wrapper for the four metric cards
 const CardsWrapper = styled.div`
   display: flex;
   gap: 20px;
@@ -32,42 +27,36 @@ const CardsWrapper = styled.div`
   @media (max-width: 1024px) {
     justify-content: center;
   }
-
   @media (max-width: 768px) {
     flex-direction: column;
   }
 `;
 
-// Generic Card styled-component for uniformity
 const Card = styled.div`
   background: ${(props) => props.bgColor || '#f8f9fa'};
   border-radius: 12px;
   padding: 20px;
   text-align: center;
-  flex: 1 1 220px; /* Ensures all cards have the same width */
+  flex: 1 1 220px;
   min-width: 220px;
   margin-bottom: 20px;
-  position: relative; /* For positioning icons */
+  position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
-// Styled-component for the Estimated Profit Card with dynamic glow
 const EstimatedProfitCard = styled(Card)`
   box-shadow: ${(props) =>
     props.profit >= 0
-      ? '0 0 15px rgba(46, 125, 50, 0.6)' // Green glow for positive profit
-      : '0 0 15px rgba(211, 47, 47, 0.6)'}; // Red glow for negative profit
-
+      ? '0 0 15px rgba(46, 125, 50, 0.6)' // Green glow
+      : '0 0 15px rgba(211, 47, 47, 0.6)'}; // Red glow
   transition: box-shadow 0.3s ease;
 `;
 
-// Wrapper for titles using relative positioning
 const TitleWrapper = styled.div`
-  position: relative; /* To position the edit icon absolutely within */
-  padding: 10px 0; /* Add some padding if necessary */
+  position: relative;
+  padding: 10px 0;
 `;
 
-// Edit Icon styled-component positioned absolutely
 const EditIconStyled = styled(FiEdit)`
   position: absolute;
   top: 0;
@@ -82,7 +71,6 @@ const EditIconStyled = styled(FiEdit)`
   }
 `;
 
-// Define SectionHeader styled-component
 const SectionHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -90,21 +78,19 @@ const SectionHeader = styled.div`
   padding: 20px 0 10px 0;
 `;
 
-// Title styled-component
 const Title = styled.h3`
   font-size: 18px;
   color: #555555;
   margin: 0;
 `;
 
-// Tooltip container
+// Tooltip
 const TooltipContainer = styled.div`
   position: relative;
   display: inline-block;
   margin-top: 10px;
 `;
 
-// Info Icon styled-component
 const InfoIconStyled = styled(FiInfo)`
   color: #007bff;
   cursor: pointer;
@@ -112,7 +98,6 @@ const InfoIconStyled = styled(FiInfo)`
   font-size: 18px;
 `;
 
-// Tooltip styled-component
 const Tooltip = styled.div`
   visibility: hidden;
   width: 220px;
@@ -123,17 +108,16 @@ const Tooltip = styled.div`
   padding: 10px;
   position: absolute;
   z-index: 10;
-  top: 125%; /* Position above the icon */
+  top: 125%;
   left: 50%;
   transform: translateX(-50%);
   opacity: 0;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 
-  /* Arrow */
   &::after {
     content: '';
     position: absolute;
-    bottom: -6px; /* Arrow below the tooltip */
+    bottom: -6px;
     left: 50%;
     transform: translateX(-50%);
     border-width: 6px;
@@ -141,21 +125,18 @@ const Tooltip = styled.div`
     border-color: #333333 transparent transparent transparent;
   }
 
-  /* Show the tooltip when hovering over the TooltipContainer */
   ${TooltipContainer}:hover & {
     visibility: visible;
     opacity: 1;
   }
 
-  /* Responsive adjustments */
   @media (max-width: 768px) {
     width: 180px;
     padding: 8px;
-    margin-left: -90px;
   }
 `;
 
-// Value styled-components
+// ARV/Profit text
 const ARVValue = styled.p`
   font-size: 28px;
   color: #333333;
@@ -171,7 +152,7 @@ const Range = styled.p`
 
 const ProfitValue = styled.p`
   font-size: 28px;
-  color: ${(props) => (props.profit >= 0 ? '#2e7d32' : '#d32f2f')}; /* Green or Red */
+  color: ${(props) => (props.profit >= 0 ? '#2e7d32' : '#d32f2f')};
   margin: 10px 0;
   font-weight: bold;
   transition: color 0.3s ease;
@@ -183,7 +164,6 @@ const ProfitRange = styled.p`
   margin-top: 8px;
 `;
 
-// Toggle Button styled-component
 const ToggleButton = styled.button`
   display: flex;
   align-items: center;
@@ -198,13 +178,10 @@ const ToggleButton = styled.button`
   &:hover {
     color: #0056b3;
   }
-
-  /* Ensure the button is focusable */
   &:focus {
     outline: none;
   }
 
-  /* Icon rotation when active */
   svg {
     margin-left: 5px;
     transition: transform 0.3s ease;
@@ -212,7 +189,7 @@ const ToggleButton = styled.button`
   }
 `;
 
-// Modal content styled-components
+// Modals
 const ModalContent = styled.div`
   padding: 20px;
 `;
@@ -233,7 +210,6 @@ const CostLabel = styled.label`
   margin-bottom: 5px;
 `;
 
-// CostField is crucial and must be defined
 const CostField = styled.input`
   width: 100%;
   padding: 8px 10px;
@@ -248,70 +224,13 @@ const CostField = styled.input`
   }
 `;
 
-// Tooltip for Input Fields
-const InputTooltipContainer = styled.div`
-  position: relative;
-  display: inline-block;
-  margin-left: 8px;
-`;
-
-const InputInfoIcon = styled(FiInfo)`
-  color: #007bff;
-  cursor: pointer;
-  transition: color 0.3s ease;
-  font-size: 18px;
-`;
-
-const InputTooltipBox = styled.div`
-  visibility: hidden;
-  width: 220px;
-  background-color: #333333;
-  color: #ffffff;
-  text-align: left;
-  border-radius: 8px;
-  padding: 10px;
-  position: absolute;
-  z-index: 20;
-  top: 50%;
-  left: 110%;
-  transform: translateY(-50%);
-  opacity: 0;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-
-  /* Arrow */
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: 100%; /* To the left of the tooltip */
-    transform: translateY(-50%);
-    border-width: 6px;
-    border-style: solid;
-    border-color: transparent #333333 transparent transparent;
-  }
-
-  /* Show the tooltip when hovering over the InputTooltipContainer */
-  ${InputTooltipContainer}:hover &,
-  ${InputTooltipContainer}:focus-within & {
-    visibility: visible;
-    opacity: 1;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    width: 200px;
-    left: 100%;
-  }
-`;
-
-// Error Message styled-component
 const ErrorMessage = styled.p`
-  color: #d32f2f; /* Red color for errors */
+  color: #d32f2f;
   font-size: 14px;
   margin-top: 8px;
 `;
 
-// Styled Components for Sales Comparables Table Section
+// Table section
 const Section = styled.section`
   width: 100%;
 `;
@@ -322,164 +241,173 @@ const Table = styled.table`
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 `;
 
+// KEY: minimal visual approach: subtle left border if selected
+const Tr = styled.tr`
+  border-left: ${(props) =>
+    props.isSelected ? '4px solid #007bff' : '4px solid transparent'};
+
+  &:hover {
+    background-color: #fafafa;
+  }
+`;
+
 const Th = styled.th`
   text-align: left;
   padding: 12px;
   background-color: #f0f0f0;
   color: #333333;
   font-weight: 500;
-  cursor: pointer; /* Indicate that the header is clickable for sorting */
-
-  @media (max-width: 768px) {
-    padding: 8px;
-    font-size: 14px;
-  }
 `;
 
 const Td = styled.td`
   padding: 12px;
   border-bottom: 1px solid #e0e0e0;
   color: #555555;
-
-  @media (max-width: 768px) {
-    padding: 8px;
-    font-size: 14px;
-  }
+  vertical-align: middle;
 `;
 
-const Tr = styled.tr`
-  &:hover {
-    background-color: #fafafa;
-  }
+
+// A small container to hold Address & optional check icon
+const AddressContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px; /* space between check icon and text */
+`;
+
+const CheckIconStyled = styled(FiCheck)`
+  color: #007bff;
+  font-size: 16px;
+  flex-shrink: 0;
 `;
 
 // --------------------- Main Component ---------------------
 
-const ValuationInsights = ({ valuationData, repairEstimates }) => {
-  // State to control the visibility of the comparables table
-  const [isTableCollapsed, setIsTableCollapsed] = useState(false);
+Modal.setAppElement('#root');
 
-  // States for additional costs
+const ValuationInsights = ({ valuationData, repairEstimates, property }) => {
+  // Basic toggles
+  const [isTableCollapsed, setIsTableCollapsed] = useState(false);
+  const [editComparables, setEditComparables] = useState(false);
+
+  // Additional cost states
   const [closingCosts, setClosingCosts] = useState(0);
   const [sellingCosts, setSellingCosts] = useState(0);
-  const [holdingPeriod, setHoldingPeriod] = useState(6); // in months
-  const [monthlyHoldingCost, setMonthlyHoldingCost] = useState(500); // per month
+  const [holdingPeriod, setHoldingPeriod] = useState(6);
+  const [monthlyHoldingCost, setMonthlyHoldingCost] = useState(500);
   const [totalHoldingCosts, setTotalHoldingCosts] = useState(
     holdingPeriod * monthlyHoldingCost
-  ); // holdingPeriod * monthlyHoldingCost
-
-  // State for Estimated Profit
-  const [profitData, setProfitData] = useState({ profit: 0 });
-
-  // State for error messages
+  );
   const [error, setError] = useState('');
-
-  // State to control the Additional Costs modal visibility
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // State for repair cost (initialized with prop value)
+  // Repair cost states
   const [repairCost, setRepairCost] = useState(
     repairEstimates?.['Fix and Flip']?.estimatedCost?.repairCost || 0
   );
-
-  // State for repair cost range (kept as per data)
   const { repairCostLow, repairCostHigh } =
     repairEstimates?.['Fix and Flip']?.estimatedCost || {};
-
-  // State to control the Repair Estimate modal visibility
   const [isRepairModalOpen, setIsRepairModalOpen] = useState(false);
-
-  // State for error messages in repair estimate modal
   const [repairError, setRepairError] = useState('');
 
-  // State for MAO percentage
-  const [maoPercentage, setMaoPercentage] = useState(70); // Default is 70%
-
-  // State to control the MAO modal visibility
+  // MAO states
+  const [maoPercentage, setMaoPercentage] = useState(70);
   const [isMaoModalOpen, setIsMaoModalOpen] = useState(false);
-
-  // State for error messages in MAO modal
   const [maoError, setMaoError] = useState('');
 
-  // Destructure necessary data from props
+  // Profit data
+  const [profitData, setProfitData] = useState({ profit: 0 });
+
+  // Destructure from props
   const { price, priceRangeLow, priceRangeHigh, comparables } = valuationData;
+  const subjectSqFt = property?.squareFootage || 0;
 
-  // Memoize MAO calculation based on user-defined percentage
-  const maoDataMemo = useMemo(() => {
-    const maoValue = Math.round(price * (maoPercentage / 100) - repairCost);
-    return {
-      value: maoValue,
-    };
-  }, [price, maoPercentage, repairCost]);
+  // Default: all comps selected
+  const [selectedCompIds, setSelectedCompIds] = useState(
+    comparables.map((comp) => comp.id)
+  );
 
-  // Calculate MAO Low and High (±10%)
-  const maoDataLowMemo = useMemo(() => {
-    return Math.round(maoDataMemo.value * 0.9);
-  }, [maoDataMemo.value]);
+  // Toggle comp selection
+  const handleCompToggle = (compId) => {
+    setSelectedCompIds((prev) =>
+      prev.includes(compId)
+        ? prev.filter((id) => id !== compId)
+        : [...prev, compId]
+    );
+  };
 
-  const maoDataHighMemo = useMemo(() => {
-    return Math.round(maoDataMemo.value * 1.1);
-  }, [maoDataMemo.value]);
+  // Weighted ARV Calculation
+  const dynamicArv = useMemo(() => {
+    if (selectedCompIds.length === 0) return 0;
+    if (selectedCompIds.length === comparables.length) return price;
 
-  // Set default additional costs based on ARV
+    let totalWeightedPPSF = 0;
+    let totalCorrelation = 0;
+    const selectedComps = comparables.filter((c) => selectedCompIds.includes(c.id));
+
+    selectedComps.forEach((c) => {
+      if (c.squareFootage && c.price && c.correlation) {
+        totalWeightedPPSF += (c.price / c.squareFootage) * c.correlation;
+        totalCorrelation += c.correlation;
+      }
+    });
+
+    if (totalCorrelation === 0) return 0;
+    const weightedPPSF = totalWeightedPPSF / totalCorrelation;
+    return Math.round(weightedPPSF * subjectSqFt);
+  }, [selectedCompIds, comparables, price, subjectSqFt]);
+
+  // Additional Costs & Profit
   useEffect(() => {
-    const defaultClosing = Math.round(price * 0.03); // 3% of ARV
-    const defaultSelling = Math.round(price * 0.05); // 5% of ARV
-    setClosingCosts(defaultClosing);
-    setSellingCosts(defaultSelling);
+    setClosingCosts(Math.round(price * 0.03));
+    setSellingCosts(Math.round(price * 0.05));
   }, [price]);
 
-  // Recalculate Total Holding Costs whenever holding period or monthly cost changes
   useEffect(() => {
     setTotalHoldingCosts(holdingPeriod * monthlyHoldingCost);
   }, [holdingPeriod, monthlyHoldingCost]);
 
-  // Recalculate Profit whenever relevant data changes
   useEffect(() => {
     const calculateProfit = () => {
-      // Estimated Profit = ARV - (Repair Estimate + MAO + Other Costs)
-      const profit =
-        price -
-        (repairCost +
-          maoDataMemo.value +
-          closingCosts +
-          sellingCosts +
-          totalHoldingCosts);
-      return {
-        profit: profit, // Allow negative values
-      };
+      const estimatedMao = Math.round(dynamicArv * (maoPercentage / 100) - repairCost);
+      const totalCosts =
+        repairCost +
+        (estimatedMao > 0 ? estimatedMao : 0) +
+        closingCosts +
+        sellingCosts +
+        totalHoldingCosts;
+      return { profit: dynamicArv - totalCosts };
     };
-
-    const newProfit = calculateProfit();
-    setProfitData(newProfit);
-
-    // Optional: Display error if desired (Removed as per user request)
-    /*
-    if (profit < 0) {
-      setError(
-        'Warning: Your estimated costs exceed the ARV, resulting in a loss.'
-      );
-    } else {
-      setError('');
-    }
-    */
-    setError(''); // Clear any existing errors
+    setProfitData(calculateProfit());
+    setError('');
   }, [
-    price,
+    dynamicArv,
     repairCost,
-    maoDataMemo.value,
+    maoPercentage,
     closingCosts,
     sellingCosts,
     totalHoldingCosts,
   ]);
 
-  // Handlers for Additional Costs Modal
+  // MAO Calculation
+  const maoDataMemo = useMemo(() => {
+    const maoValue = Math.round(price * (maoPercentage / 100) - repairCost);
+    return { value: maoValue };
+  }, [price, maoPercentage, repairCost]);
+
+  const maoDataLowMemo = useMemo(
+    () => Math.round(maoDataMemo.value * 0.9),
+    [maoDataMemo.value]
+  );
+  const maoDataHighMemo = useMemo(
+    () => Math.round(maoDataMemo.value * 1.1),
+    [maoDataMemo.value]
+  );
+
+  // Modals
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  // Handler for Save Button with Validation
   const handleSave = () => {
-    // Basic validation to prevent negative numbers
     if (
       closingCosts < 0 ||
       sellingCosts < 0 ||
@@ -489,44 +417,37 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
       setError('Please enter valid non-negative numbers.');
       return;
     }
-
-    // If validation passes, clear errors and close modal
     setError('');
     closeModal();
   };
 
-  // Handlers for Repair Estimate Modal
+  // Repair Estimate
   const openRepairModal = () => setIsRepairModalOpen(true);
   const closeRepairModal = () => setIsRepairModalOpen(false);
 
   const handleSaveRepairEstimate = () => {
-    // Basic validation to prevent negative numbers
     if (repairCost < 0) {
       setRepairError('Please enter a valid non-negative number.');
       return;
     }
-
-    // If validation passes, clear errors and close modal
     setRepairError('');
     closeRepairModal();
   };
 
-  // Handlers for MAO Modal
+  // MAO
   const openMaoModal = () => setIsMaoModalOpen(true);
   const closeMaoModal = () => setIsMaoModalOpen(false);
 
   const handleSaveMaoPercentage = () => {
-    // Validation: Percentage should be between 1 and 100
     if (maoPercentage <= 0 || maoPercentage > 100) {
       setMaoError('Please enter a valid percentage between 1 and 100.');
       return;
     }
-
-    // If validation passes, clear errors and close modal
     setMaoError('');
     closeMaoModal();
   };
 
+  // --------------------- Render ---------------------
   return (
     <Container>
       <CardsWrapper>
@@ -535,21 +456,25 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
           <TitleWrapper>
             <Title>After Repair Value</Title>
           </TitleWrapper>
-          <ARVValue>${price.toLocaleString()}</ARVValue>
-          <Range>${priceRangeLow.toLocaleString()} - ${priceRangeHigh.toLocaleString()}</Range>
+
+          {selectedCompIds.length === 0 ? (
+            <ARVValue style={{ color: 'red' }}>$0 (No Comps Selected)</ARVValue>
+          ) : (
+            <ARVValue>${dynamicArv.toLocaleString()}</ARVValue>
+          )}
+
+          <Range>
+            Range: ${priceRangeLow.toLocaleString()} - ${priceRangeHigh.toLocaleString()}
+          </Range>
+
           <TooltipContainer>
-            <InfoIconStyled
-              aria-label="After Repair Value Explanation"
-              role="tooltip"
-              tabIndex="0"
-            >
+            <InfoIconStyled tabIndex="0">
               <FiInfo />
             </InfoIconStyled>
-            <Tooltip role="tooltip" aria-hidden="true">
-              <strong>After Repair Value (ARV) Calculation:</strong>
+            <Tooltip>
+              <strong>After Repair Value:</strong>
               <br />
-              ARV represents the estimated value of the property after all repairs
-              and renovations are completed.
+              Calculated from selected comps, weighted by correlation.
             </Tooltip>
           </TooltipContainer>
         </Card>
@@ -558,27 +483,22 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
         <Card>
           <TitleWrapper>
             <Title>Repair Estimate</Title>
-            <EditIconStyled
-              aria-label="Edit Repair Estimate"
-              onClick={openRepairModal}
-            >
+            <EditIconStyled onClick={openRepairModal}>
               <FiEdit />
             </EditIconStyled>
           </TitleWrapper>
           <ARVValue>${repairCost.toLocaleString()}</ARVValue>
-          <Range>${repairCostLow.toLocaleString()} - ${repairCostHigh.toLocaleString()}</Range>
+          <Range>
+            ${repairCostLow?.toLocaleString()} - ${repairCostHigh?.toLocaleString()}
+          </Range>
           <TooltipContainer>
-            <InfoIconStyled
-              aria-label="Repair Estimate Explanation"
-              role="tooltip"
-              tabIndex="0"
-            >
+            <InfoIconStyled tabIndex="0">
               <FiInfo />
             </InfoIconStyled>
-            <Tooltip role="tooltip" aria-hidden="true">
+            <Tooltip>
               <strong>Repair Estimate:</strong>
               <br />
-              Estimated costs required to repair and renovate the property to achieve the ARV.
+              Cost to fix and renovate the property.
             </Tooltip>
           </TooltipContainer>
         </Card>
@@ -587,29 +507,22 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
         <Card>
           <TitleWrapper>
             <Title>Max Allowable Offer</Title>
-            <EditIconStyled
-              aria-label="Edit MAO Percentage"
-              onClick={openMaoModal}
-            >
+            <EditIconStyled onClick={openMaoModal}>
               <FiEdit />
             </EditIconStyled>
           </TitleWrapper>
           <ARVValue>${maoDataMemo.value.toLocaleString()}</ARVValue>
-          <Range>${maoDataLowMemo.toLocaleString()} - ${maoDataHighMemo.toLocaleString()}</Range>
+          <Range>
+            ${maoDataLowMemo.toLocaleString()} - ${maoDataHighMemo.toLocaleString()}
+          </Range>
           <TooltipContainer>
-            <InfoIconStyled
-              aria-label="MAO Calculation Explanation"
-              role="tooltip"
-              tabIndex="0"
-            >
+            <InfoIconStyled tabIndex="0">
               <FiInfo />
             </InfoIconStyled>
-            <Tooltip role="tooltip" aria-hidden="true">
+            <Tooltip>
               <strong>MAO Calculation:</strong>
               <br />
-              MAO = {maoPercentage}% of ARV - Repair Cost.
-              <br />
-              Range: ±10% of MAO.
+              {maoPercentage}% of ARV - Repair Cost.
             </Tooltip>
           </TooltipContainer>
         </Card>
@@ -618,30 +531,22 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
         <EstimatedProfitCard profit={profitData.profit}>
           <TitleWrapper>
             <Title>Estimated Profit</Title>
-            <EditIconStyled
-              aria-label="Edit Estimated Profit"
-              onClick={openModal}
-            >
+            <EditIconStyled onClick={openModal}>
               <FiEdit />
             </EditIconStyled>
           </TitleWrapper>
           <ProfitValue profit={profitData.profit}>
             ${profitData.profit.toLocaleString()}
           </ProfitValue>
-          <ProfitRange>Estimated Profit from the Deal</ProfitRange>
-          {/* Removed error message related to negative profit */}
+          <ProfitRange>Estimated Profit</ProfitRange>
           <TooltipContainer>
-            <InfoIconStyled
-              aria-label="Estimated Profit Explanation"
-              role="tooltip"
-              tabIndex="0"
-            >
+            <InfoIconStyled tabIndex="0">
               <FiInfo />
             </InfoIconStyled>
-            <Tooltip role="tooltip" aria-hidden="true">
+            <Tooltip>
               <strong>Estimated Profit:</strong>
               <br />
-              Estimated profit from the deal after accounting for all costs.
+              ARV minus repair, closing, holding, and MAO costs.
             </Tooltip>
           </TooltipContainer>
         </EstimatedProfitCard>
@@ -668,65 +573,35 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
         <ModalContent>
           <ModalTitle>Edit Additional Costs</ModalTitle>
 
-          {/* Closing Costs Input */}
+          {/* Closing Costs */}
           <CostInput>
             <CostLabel htmlFor="closingCosts">Closing Costs ($):</CostLabel>
-            <InputTooltipContainer>
-              <InputInfoIcon aria-label="Closing Costs Explanation" role="tooltip" tabIndex="0">
-                <FiInfo />
-              </InputInfoIcon>
-              <InputTooltipBox role="tooltip" aria-hidden="true">
-                <strong>Closing Costs:</strong>
-                <br />
-                These are the fees and expenses you incur when purchasing the property, typically around 3% of the After Repair Value (ARV). They include appraisal fees, title insurance, and other transaction-related costs.
-              </InputTooltipBox>
-            </InputTooltipContainer>
             <CostField
               type="number"
               id="closingCosts"
               value={closingCosts}
               onChange={(e) => setClosingCosts(Number(e.target.value))}
-              placeholder={`3% of ARV (${(price * 0.03).toLocaleString()})`}
+              placeholder="Closing Costs"
               min="0"
             />
           </CostInput>
 
-          {/* Selling Costs Input */}
+          {/* Selling Costs */}
           <CostInput>
             <CostLabel htmlFor="sellingCosts">Selling Costs ($):</CostLabel>
-            <InputTooltipContainer>
-              <InputInfoIcon aria-label="Selling Costs Explanation" role="tooltip" tabIndex="0">
-                <FiInfo />
-              </InputInfoIcon>
-              <InputTooltipBox role="tooltip" aria-hidden="true">
-                <strong>Selling Costs:</strong>
-                <br />
-                These are expenses related to selling the property, typically around 5% of the ARV. They include agent commissions, marketing fees, and closing costs on the sale.
-              </InputTooltipBox>
-            </InputTooltipContainer>
             <CostField
               type="number"
               id="sellingCosts"
               value={sellingCosts}
               onChange={(e) => setSellingCosts(Number(e.target.value))}
-              placeholder={`5% of ARV (${(price * 0.05).toLocaleString()})`}
+              placeholder="Selling Costs"
               min="0"
             />
           </CostInput>
 
-          {/* Holding Period Input */}
+          {/* Holding Period */}
           <CostInput>
             <CostLabel htmlFor="holdingPeriod">Holding Period (months):</CostLabel>
-            <InputTooltipContainer>
-              <InputInfoIcon aria-label="Holding Period Explanation" role="tooltip" tabIndex="0">
-                <FiInfo />
-              </InputInfoIcon>
-              <InputTooltipBox role="tooltip" aria-hidden="true">
-                <strong>Holding Period:</strong>
-                <br />
-                The number of months you expect to hold the property before selling it. This affects the total holding costs, including utilities, maintenance, and property taxes.
-              </InputTooltipBox>
-            </InputTooltipContainer>
             <CostField
               type="number"
               id="holdingPeriod"
@@ -737,37 +612,26 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
             />
           </CostInput>
 
-          {/* Monthly Holding Cost Input */}
+          {/* Monthly Holding Cost */}
           <CostInput>
             <CostLabel htmlFor="monthlyHoldingCost">Monthly Holding Cost ($):</CostLabel>
-            <InputTooltipContainer>
-              <InputInfoIcon aria-label="Monthly Holding Cost Explanation" role="tooltip" tabIndex="0">
-                <FiInfo />
-              </InputInfoIcon>
-              <InputTooltipBox role="tooltip" aria-hidden="true">
-                <strong>Monthly Holding Cost:</strong>
-                <br />
-                The average monthly expenses incurred while holding the property. This typically includes utilities, insurance, maintenance, and property taxes. An example default value is $500 per month.
-              </InputTooltipBox>
-            </InputTooltipContainer>
             <CostField
               type="number"
               id="monthlyHoldingCost"
               value={monthlyHoldingCost}
               onChange={(e) => setMonthlyHoldingCost(Number(e.target.value))}
-              placeholder="e.g., 500"
+              placeholder="500"
               min="0"
             />
           </CostInput>
 
-          {/* Save Button */}
           <button
             onClick={handleSave}
             style={{
               marginTop: '20px',
               padding: '10px 20px',
               backgroundColor: '#007bff',
-              color: '#ffffff',
+              color: '#fff',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
@@ -776,12 +640,11 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
             Save
           </button>
 
-          {/* Display Error Message if Any */}
           {error && <ErrorMessage>{error}</ErrorMessage>}
         </ModalContent>
       </Modal>
 
-      {/* Modal for Editing Repair Estimates */}
+      {/* Modal for Repair Estimates */}
       <Modal
         isOpen={isRepairModalOpen}
         onRequestClose={closeRepairModal}
@@ -801,38 +664,25 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
       >
         <ModalContent>
           <ModalTitle>Edit Repair Estimate</ModalTitle>
-
-          {/* Repair Cost Input */}
           <CostInput>
             <CostLabel htmlFor="repairCost">Repair Cost ($):</CostLabel>
-            <InputTooltipContainer>
-              <InputInfoIcon aria-label="Repair Cost Explanation" role="tooltip" tabIndex="0">
-                <FiInfo />
-              </InputInfoIcon>
-              <InputTooltipBox role="tooltip" aria-hidden="true">
-                <strong>Repair Cost:</strong>
-                <br />
-                The total estimated cost to repair and renovate the property.
-              </InputTooltipBox>
-            </InputTooltipContainer>
             <CostField
               type="number"
               id="repairCost"
               value={repairCost}
               onChange={(e) => setRepairCost(Number(e.target.value))}
-              placeholder={`Enter repair cost`}
+              placeholder="Enter repair cost"
               min="0"
             />
           </CostInput>
 
-          {/* Save Button */}
           <button
             onClick={handleSaveRepairEstimate}
             style={{
               marginTop: '20px',
               padding: '10px 20px',
               backgroundColor: '#007bff',
-              color: '#ffffff',
+              color: '#fff',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
@@ -840,13 +690,11 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
           >
             Save
           </button>
-
-          {/* Display Error Message if Any */}
           {repairError && <ErrorMessage>{repairError}</ErrorMessage>}
         </ModalContent>
       </Modal>
 
-      {/* Modal for Editing MAO Percentage */}
+      {/* Modal for MAO Percentage */}
       <Modal
         isOpen={isMaoModalOpen}
         onRequestClose={closeMaoModal}
@@ -866,20 +714,8 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
       >
         <ModalContent>
           <ModalTitle>Edit MAO Percentage</ModalTitle>
-
-          {/* MAO Percentage Input */}
           <CostInput>
             <CostLabel htmlFor="maoPercentage">MAO Percentage (%):</CostLabel>
-            <InputTooltipContainer>
-              <InputInfoIcon aria-label="MAO Percentage Explanation" role="tooltip" tabIndex="0">
-                <FiInfo />
-              </InputInfoIcon>
-              <InputTooltipBox role="tooltip" aria-hidden="true">
-                <strong>MAO Percentage:</strong>
-                <br />
-                The percentage of the ARV used to calculate the Max Allowable Offer (MAO). For example, 70% means MAO = 70% of ARV - Repair Cost.
-              </InputTooltipBox>
-            </InputTooltipContainer>
             <CostField
               type="number"
               id="maoPercentage"
@@ -891,14 +727,13 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
             />
           </CostInput>
 
-          {/* Save Button */}
           <button
             onClick={handleSaveMaoPercentage}
             style={{
               marginTop: '20px',
               padding: '10px 20px',
               backgroundColor: '#007bff',
-              color: '#ffffff',
+              color: '#fff',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
@@ -906,29 +741,46 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
           >
             Save
           </button>
-
-          {/* Display Error Message if Any */}
           {maoError && <ErrorMessage>{maoError}</ErrorMessage>}
         </ModalContent>
       </Modal>
 
-      {/* Sales Comparables Table Section */}
+      {/* Sales Comparables Table */}
       <Section>
         <SectionHeader>
           <Title>Sales Comparables</Title>
-          <ToggleButton
-            onClick={() => setIsTableCollapsed(!isTableCollapsed)}
-            collapsed={isTableCollapsed}
-            aria-label={isTableCollapsed ? 'Show Sales Comparables' : 'Hide Sales Comparables'}
-          >
-            {isTableCollapsed ? 'Show' : 'Hide'}
-            {isTableCollapsed ? <FiChevronDown /> : <FiChevronUp />}
-          </ToggleButton>
+
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button
+              onClick={() => setEditComparables(!editComparables)}
+              style={{
+                backgroundColor: editComparables ? '#d9534f' : '#007bff',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '6px 12px',
+                cursor: 'pointer',
+              }}
+            >
+              {editComparables ? 'Done' : 'Edit Comparables'}
+            </button>
+
+            <ToggleButton
+              onClick={() => setIsTableCollapsed(!isTableCollapsed)}
+              collapsed={isTableCollapsed}
+            >
+              {isTableCollapsed ? 'Show' : 'Hide'}
+              {isTableCollapsed ? <FiChevronDown /> : <FiChevronUp />}
+            </ToggleButton>
+          </div>
         </SectionHeader>
+
         {!isTableCollapsed && (
           <Table>
             <thead>
               <tr>
+                {/* Only show "Select" column if editing */}
+                {editComparables && <Th>Select</Th>}
                 <Th>Address</Th>
                 <Th>Price</Th>
                 <Th>Sq Ft</Th>
@@ -940,20 +792,40 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
               </tr>
             </thead>
             <tbody>
-              {comparables.map((comp) => (
-                <Tr key={comp.id}>
-                  <Td>{comp.formattedAddress}</Td>
-                  <Td>${comp.price.toLocaleString()}</Td>
-                  <Td>{comp.squareFootage}</Td>
-                  <Td>
-                    {comp.bedrooms}/{comp.bathrooms}
-                  </Td>
-                  <Td>{comp.yearBuilt}</Td>
-                  <Td>{comp.daysOnMarket}</Td>
-                  <Td>{comp.distance.toFixed(2)}</Td>
-                  <Td>{(comp.correlation * 100).toFixed(1)}%</Td>
-                </Tr>
-              ))}
+              {comparables.map((comp) => {
+                const isSelected = selectedCompIds.includes(comp.id);
+                return (
+                  <Tr key={comp.id} isSelected={isSelected}>
+                    {editComparables && (
+                      <Td>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleCompToggle(comp.id)}
+                        />
+                      </Td>
+                    )}
+                    <Td>
+                      <AddressContainer>
+                        {/* If selected, show a minimal check icon */}
+                        {isSelected && !editComparables && (
+                          <CheckIconStyled />
+                        )}
+                        {comp.formattedAddress}
+                      </AddressContainer>
+                    </Td>
+                    <Td>${comp.price.toLocaleString()}</Td>
+                    <Td>{comp.squareFootage}</Td>
+                    <Td>
+                      {comp.bedrooms}/{comp.bathrooms}
+                    </Td>
+                    <Td>{comp.yearBuilt}</Td>
+                    <Td>{comp.daysOnMarket}</Td>
+                    <Td>{comp.distance.toFixed(2)}</Td>
+                    <Td>{(comp.correlation * 100).toFixed(1)}%</Td>
+                  </Tr>
+                );
+              })}
             </tbody>
           </Table>
         )}
@@ -961,8 +833,6 @@ const ValuationInsights = ({ valuationData, repairEstimates }) => {
     </Container>
   );
 };
-
-// --------------------- PropTypes Definitions ---------------------
 
 ValuationInsights.propTypes = {
   valuationData: PropTypes.shape({
@@ -993,8 +863,9 @@ ValuationInsights.propTypes = {
       }).isRequired,
     }).isRequired,
   }).isRequired,
+  property: PropTypes.shape({
+    squareFootage: PropTypes.number,
+  }).isRequired,
 };
-
-// --------------------- Export Component ---------------------
 
 export default ValuationInsights;

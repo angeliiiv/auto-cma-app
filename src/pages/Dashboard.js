@@ -54,6 +54,7 @@ function Dashboard() {
         <ValuationInsights 
           valuationData={valuationData}
           repairEstimates={repairEstimates} // <-- pass it here
+          property={propertyData}
         />
         <RentalOverview rentalData={rentalData} /> 
         <MarketStatistics marketData={marketData} propertyType={targetPropertyType} />
