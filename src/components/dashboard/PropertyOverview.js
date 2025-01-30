@@ -3,11 +3,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import { FaBed, FaBath, FaRulerCombined, FaCalendarAlt } from 'react-icons/fa';
 
-// Importing React Icons from Font Awesome
-import { FaMapMarkerAlt, FaBed, FaBath, FaRulerCombined, FaCalendarAlt } from 'react-icons/fa';
-
-const OverviewContainer = styled.div`
+// Container similar to ValuationInsights "Container"
+const Container = styled.div`
   width: 100%;
   max-width: 1200px;
   padding: 20px;
@@ -15,102 +14,123 @@ const OverviewContainer = styled.div`
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
+  margin-bottom: 20px;
+`;
+
+// Wrapper for the "cards" (similar to ValuationInsights "CardsWrapper")
+const CardsWrapper = styled.div`
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+
+  @media (max-width: 1024px) {
+    justify-content: center;
+  }
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+// Each attribute shown as a "card" (similar to ValuationInsights "Card")
+const Card = styled.div`
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  flex: 1 1 220px;
+  min-width: 220px;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
   display: flex;
   flex-direction: column;
-  
-  @media (min-width: 768px) {
-    flex-direction: row;
-  }
-`;
-
-const PhotoWrapper = styled.div`
-  flex: 1;
-  margin-bottom: 20px;
-
-  @media (min-width: 768px) {
-    margin-bottom: 0;
-    margin-right: 20px;
-  }
-`;
-
-const Photo = styled.img`
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  border-radius: 12px;
-`;
-
-const Details = styled.div`
-  flex: 1;
-  padding: 10px;
-`;
-
-const DetailItem = styled.div`
-  margin: 12px 0;
-  display: flex;
   align-items: center;
-  transition: background-color 0.3s ease;
-  padding: 8px;
-  border-radius: 8px;
-
-  &:hover {
-    background-color: #f9f9f9;
-  }
-
-  & > svg {
-    margin-right: 10px;
-    color: #555555;
-    min-width: 24px;
-    min-height: 24px;
-  }
+  justify-content: center;
 `;
 
-const DetailText = styled.p`
-  margin: 0;
+// Title for the "section" (optional)
+const Title = styled.h3`
+  font-size: 18px;
   color: #555555;
-  font-size: 16px;
+  margin: 0 0 20px;
+  text-align: center;
 `;
 
-const Header = styled.h3`
-  margin-bottom: 20px;
-  color: #333333;
+// Address span across entire container
+const AddressTitle = styled.h2`
   font-size: 24px;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 10px;
+  color: #333333;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+const IconContainer = styled.div`
+  margin-bottom: 8px;
+  font-size: 24px;
+  color: #007bff;
+`;
+
+const CardLabel = styled.p`
+  font-size: 16px;
+  color: #333;
+  margin: 0;
+  font-weight: 500;
 `;
 
 const PropertyOverview = ({ property }) => {
-  const { formattedAddress, bedrooms, bathrooms, squareFootage, yearBuilt, photoUrl } = property;
+  const {
+    formattedAddress,
+    bedrooms,
+    bathrooms,
+    squareFootage,
+    yearBuilt,
+  } = property;
 
   return (
-    <OverviewContainer>
-      <PhotoWrapper>
-        <Photo src={photoUrl || 'https://via.placeholder.com/600x400'} alt="Property" />
-      </PhotoWrapper>
-      <Details>
-        <Header>Property Overview</Header>
-        <DetailItem>
-          <FaMapMarkerAlt size={24} />
-          <DetailText><strong>Address:</strong> {formattedAddress}</DetailText>
-        </DetailItem>
-        <DetailItem>
-          <FaBed size={24} />
-          <DetailText><strong>Bedrooms:</strong> {bedrooms}</DetailText>
-        </DetailItem>
-        <DetailItem>
-          <FaBath size={24} />
-          <DetailText><strong>Bathrooms:</strong> {bathrooms}</DetailText>
-        </DetailItem>
-        <DetailItem>
-          <FaRulerCombined size={24} />
-          <DetailText><strong>SQFT:</strong> {squareFootage}</DetailText>
-        </DetailItem>
-        <DetailItem>
-          <FaCalendarAlt size={24} />
-          <DetailText><strong>Year Built:</strong> {yearBuilt}</DetailText>
-        </DetailItem>
-      </Details>
-    </OverviewContainer>
+    <Container>
+      {/* Optional Title for the section, or remove if you only want the address */}
+      {/* <Title>Property Overview</Title> */}
+
+      {/* Address across entire container */}
+      <AddressTitle>{formattedAddress}</AddressTitle>
+
+      <CardsWrapper>
+        {/* Beds */}
+        <Card>
+          <IconContainer>
+            <FaBed />
+          </IconContainer>
+          <CardLabel>{bedrooms} Beds</CardLabel>
+        </Card>
+
+        {/* Baths */}
+        <Card>
+          <IconContainer>
+            <FaBath />
+          </IconContainer>
+          <CardLabel>{bathrooms} Baths</CardLabel>
+        </Card>
+
+        {/* Square Footage */}
+        <Card>
+          <IconContainer>
+            <FaRulerCombined />
+          </IconContainer>
+          <CardLabel>{squareFootage.toLocaleString()} sqft</CardLabel>
+        </Card>
+
+        {/* Year Built */}
+        <Card>
+          <IconContainer>
+            <FaCalendarAlt />
+          </IconContainer>
+          <CardLabel>Built in {yearBuilt}</CardLabel>
+        </Card>
+      </CardsWrapper>
+    </Container>
   );
 };
 
@@ -121,7 +141,6 @@ PropertyOverview.propTypes = {
     bathrooms: PropTypes.number.isRequired,
     squareFootage: PropTypes.number.isRequired,
     yearBuilt: PropTypes.number.isRequired,
-    photoUrl: PropTypes.string, // Optional
   }).isRequired,
 };
 
